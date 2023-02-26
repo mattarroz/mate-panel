@@ -153,6 +153,17 @@ keybind (cycle-panels-backward, handle_cycle, META_TAB_LIST_DOCKS, REVERSES_AND_
 keybind (show-desktop, handle_show_desktop, 0, 0)
 keybind (panel-main-menu, handle_panel, META_KEYBINDING_ACTION_PANEL_MAIN_MENU, 0)
 keybind (panel-run-dialog, handle_panel, META_KEYBINDING_ACTION_PANEL_RUN_DIALOG, 0)
+keybind (switch-to-window-1, handle_panel, META_KEYBINDING_ACTION_SWITCH_TO_WINDOW_LIST_1, 0)
+keybind (switch-to-window-2, handle_panel, META_KEYBINDING_ACTION_SWITCH_TO_WINDOW_LIST_2, 0)
+keybind (switch-to-window-3, handle_panel, META_KEYBINDING_ACTION_SWITCH_TO_WINDOW_LIST_3, 0)
+keybind (switch-to-window-4, handle_panel, META_KEYBINDING_ACTION_SWITCH_TO_WINDOW_LIST_4, 0)
+keybind (switch-to-window-5, handle_panel, META_KEYBINDING_ACTION_SWITCH_TO_WINDOW_LIST_5, 0)
+keybind (switch-to-window-6, handle_panel, META_KEYBINDING_ACTION_SWITCH_TO_WINDOW_LIST_6, 0)
+keybind (switch-to-window-7, handle_panel, META_KEYBINDING_ACTION_SWITCH_TO_WINDOW_LIST_7, 0)
+keybind (switch-to-window-8, handle_panel, META_KEYBINDING_ACTION_SWITCH_TO_WINDOW_LIST_8, 0)
+keybind (switch-to-window-9, handle_panel, META_KEYBINDING_ACTION_SWITCH_TO_WINDOW_LIST_9, 0)
+keybind (switch-to-window-0, handle_panel, META_KEYBINDING_ACTION_SWITCH_TO_WINDOW_LIST_0, 0)
+
 
 /* Yes, the param is offset by one.  Historical reasons.  (Maybe worth fixing
  * at some point.)  The description is NULL here because the stanza is

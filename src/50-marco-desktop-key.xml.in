@@ -13,5 +13,16 @@
 
 	<KeyListEntry name="rename-workspace" description="Rename current workspace" />
 
+    <KeyListEntry name="switch-to-window-1" description="Switch to window 1 from default window list applet"/>
+    <KeyListEntry name="switch-to-window-2" description="Switch to window 2 from default window list applet"/>
+    <KeyListEntry name="switch-to-window-3" description="Switch to window 3 from default window list applet"/>
+    <KeyListEntry name="switch-to-window-4" description="Switch to window 4 from default window list applet"/>
+    <KeyListEntry name="switch-to-window-5" description="Switch to window 5 from default window list applet"/>
+    <KeyListEntry name="switch-to-window-6" description="Switch to window 6 from default window list applet"/>
+    <KeyListEntry name="switch-to-window-7" description="Switch to window 7 from default window list applet"/>
+    <KeyListEntry name="switch-to-window-8" description="Switch to window 8 from default window list applet"/>
+    <KeyListEntry name="switch-to-window-9" description="Switch to window 9 from default window list applet"/>
+    <KeyListEntry name="switch-to-window-0" description="Switch to window 10 from default window list applet"/>
+
 </KeyListEntries>
 

@@ -2925,6 +2925,36 @@ handle_panel (MetaDisplay    *display,
     case META_KEYBINDING_ACTION_PANEL_RUN_DIALOG:
       action_atom = display->atom__MATE_PANEL_ACTION_RUN_DIALOG;
       break;
+	case META_KEYBINDING_ACTION_SWITCH_TO_WINDOW_LIST_1:
+	  action_atom = display->atom__MATE_PANEL_ACTION_SWITCH_TO_WINDOW_LIST_1;
+	  break;
+  	case META_KEYBINDING_ACTION_SWITCH_TO_WINDOW_LIST_2:
+	  action_atom = display->atom__MATE_PANEL_ACTION_SWITCH_TO_WINDOW_LIST_2;
+	  break;
+  	case META_KEYBINDING_ACTION_SWITCH_TO_WINDOW_LIST_3:
+	  action_atom = display->atom__MATE_PANEL_ACTION_SWITCH_TO_WINDOW_LIST_3;
+	  break;
+ 	case META_KEYBINDING_ACTION_SWITCH_TO_WINDOW_LIST_4:
+	  action_atom = display->atom__MATE_PANEL_ACTION_SWITCH_TO_WINDOW_LIST_4;
+	  break;
+	case META_KEYBINDING_ACTION_SWITCH_TO_WINDOW_LIST_5:
+	  action_atom = display->atom__MATE_PANEL_ACTION_SWITCH_TO_WINDOW_LIST_5;
+	  break;
+	case META_KEYBINDING_ACTION_SWITCH_TO_WINDOW_LIST_6:
+	  action_atom = display->atom__MATE_PANEL_ACTION_SWITCH_TO_WINDOW_LIST_6;
+	  break;
+	case META_KEYBINDING_ACTION_SWITCH_TO_WINDOW_LIST_7:
+	  action_atom = display->atom__MATE_PANEL_ACTION_SWITCH_TO_WINDOW_LIST_7;
+	  break;
+	case META_KEYBINDING_ACTION_SWITCH_TO_WINDOW_LIST_8:
+	  action_atom = display->atom__MATE_PANEL_ACTION_SWITCH_TO_WINDOW_LIST_8;
+	  break;
+	case META_KEYBINDING_ACTION_SWITCH_TO_WINDOW_LIST_9:
+	  action_atom = display->atom__MATE_PANEL_ACTION_SWITCH_TO_WINDOW_LIST_9;
+	  break;
+	case META_KEYBINDING_ACTION_SWITCH_TO_WINDOW_LIST_0:
+	  action_atom = display->atom__MATE_PANEL_ACTION_SWITCH_TO_WINDOW_LIST_0;
+	  break;
     default:
       return;
     }
@@ -3133,6 +3163,16 @@ handle_switch (MetaDisplay    *display,
 
   do_choose_window (display, screen, event_window, event, binding,
                     backwards, TRUE);
+}
+
+static void
+handle_switch_to_window_from_list (MetaDisplay    *display,
+								   MetaScreen     *screen,
+								   MetaWindow     *event_window,
+								   XEvent         *event,
+								   MetaKeyBinding *binding)
+{
+
 }
 
 static void
