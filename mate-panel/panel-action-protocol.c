@@ -52,6 +52,16 @@ static Atom atom_mate_panel_action_run_dialog = None;
 static Atom atom_gnome_panel_action_main_menu  = None;
 static Atom atom_gnome_panel_action_run_dialog = None;
 static Atom atom_mate_panel_action_kill_dialog = None;
+static Atom atom_mate_panel_action_switch_to_window_list_1 = None;
+static Atom atom_mate_panel_action_switch_to_window_list_2 = None;
+static Atom atom_mate_panel_action_switch_to_window_list_3 = None;
+static Atom atom_mate_panel_action_switch_to_window_list_4 = None;
+static Atom atom_mate_panel_action_switch_to_window_list_5 = None;
+static Atom atom_mate_panel_action_switch_to_window_list_6 = None;
+static Atom atom_mate_panel_action_switch_to_window_list_7 = None;
+static Atom atom_mate_panel_action_switch_to_window_list_8 = None;
+static Atom atom_mate_panel_action_switch_to_window_list_9 = None;
+static Atom atom_mate_panel_action_switch_to_window_list_0 = None;
 
 static void
 panel_action_protocol_main_menu (GdkScreen *screen,
@@ -101,6 +111,24 @@ panel_action_protocol_main_menu (GdkScreen *screen,
 	gdk_event_set_device (event, device);
 
 	gtk_menu_popup_at_pointer (GTK_MENU (menu),event);
+}
+
+static void
+panel_action_panel_action_switch_to_window_by_task_id (GdkScreen *screen,
+													   guint task_id)
+{
+  GSList *registered_applets = mate_panel_applet_list_applets();
+
+  for (GSList *l = registered_applets; l; l = l->next) {
+		AppletInfo *info = l->data;
+		printf("Applet id: %s\n", info->id);
+		if (strcmp(info->id, "org.mate.panel.applet.window-list") == 0) {
+		  if (screen) {
+			if (screen == gtk_widget_get_screen (info->widget))
+			  info->widget;
+		  }
+		}
+  }
 }
 
 static void
@@ -158,6 +186,8 @@ panel_action_protocol_filter (GdkXEvent *gdk_xevent,
 		panel_action_protocol_run_dialog (screen, xevent->xclient.data.l [1]);
 	else if (xevent->xclient.data.l [0] == (long) atom_mate_panel_action_kill_dialog)
 		panel_action_protocol_kill_dialog (screen, xevent->xclient.data.l [1]);
+	else if (xevent->xclient.data.l [0] == (long) atom_mate_panel_action_switch_to_window_list_1)
+	  	panel_action_panel_action_switch_to_window_by_task_id(screen, 0);
 	else
 		return GDK_FILTER_CONTINUE;
 
@@ -200,6 +230,46 @@ panel_action_protocol_init (void)
 		XInternAtom (GDK_DISPLAY_XDISPLAY (display),
 			     "_MATE_PANEL_ACTION_KILL_DIALOG",
 			     FALSE);
+	atom_mate_panel_action_switch_to_window_list_1 =
+		XInternAtom (GDK_DISPLAY_XDISPLAY (display),
+				 	"_MATE_PANEL_ACTION_SWITCH_TO_WINDOW_LIST_1",
+				   	FALSE);
+	atom_mate_panel_action_switch_to_window_list_2 =
+		XInternAtom (GDK_DISPLAY_XDISPLAY (display),
+					   "_MATE_PANEL_ACTION_SWITCH_TO_WINDOW_LIST_2",
+					   FALSE);
+	atom_mate_panel_action_switch_to_window_list_3 =
+		XInternAtom (GDK_DISPLAY_XDISPLAY (display),
+					   "_MATE_PANEL_ACTION_SWITCH_TO_WINDOW_LIST_3",
+					   FALSE);
+	atom_mate_panel_action_switch_to_window_list_4 =
+		XInternAtom (GDK_DISPLAY_XDISPLAY (display),
+					   "_MATE_PANEL_ACTION_SWITCH_TO_WINDOW_LIST_4",
+					   FALSE);
+	atom_mate_panel_action_switch_to_window_list_5 =
+		XInternAtom (GDK_DISPLAY_XDISPLAY (display),
+					   "_MATE_PANEL_ACTION_SWITCH_TO_WINDOW_LIST_5",
+					   FALSE);
+	atom_mate_panel_action_switch_to_window_list_6 =
+		XInternAtom (GDK_DISPLAY_XDISPLAY (display),
+					   "_MATE_PANEL_ACTION_SWITCH_TO_WINDOW_LIST_6",
+					   FALSE);
+	atom_mate_panel_action_switch_to_window_list_7 =
+		XInternAtom (GDK_DISPLAY_XDISPLAY (display),
+					   "_MATE_PANEL_ACTION_SWITCH_TO_WINDOW_LIST_7",
+					   FALSE);
+	atom_mate_panel_action_switch_to_window_list_8 =
+		XInternAtom (GDK_DISPLAY_XDISPLAY (display),
+					   "_MATE_PANEL_ACTION_SWITCH_TO_WINDOW_LIST_8",
+					   FALSE);
+	atom_mate_panel_action_switch_to_window_list_9 =
+		XInternAtom (GDK_DISPLAY_XDISPLAY (display),
+					   "_MATE_PANEL_ACTION_SWITCH_TO_WINDOW_LIST_9",
+					   FALSE);
+	atom_mate_panel_action_switch_to_window_list_0 =
+		XInternAtom (GDK_DISPLAY_XDISPLAY (display),
+				   "_MATE_PANEL_ACTION_SWITCH_TO_WINDOW_LIST_0",
+				   FALSE);
 
 	/* We'll filter event sent on non-root windows later */
 	gdk_window_add_filter (NULL, panel_action_protocol_filter, NULL);
