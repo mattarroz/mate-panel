@@ -123,6 +123,8 @@ int  mate_panel_applet_factory_setup_in_process (const gchar               *fact
 							  MatePanelAppletFactoryCallback callback,
 							  gpointer                   data);
 
+char *
+mate_panel_applet_get_applet_id (MatePanelApplet *applet);
 
 /*
  * These macros are getting a bit unwieldy.

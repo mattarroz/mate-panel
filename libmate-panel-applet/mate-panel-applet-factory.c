@@ -44,6 +44,7 @@ struct _MatePanelAppletFactory {
 	gint             registration_id;
 
 	GHashTable      *applets;
+	GHashTable      *n_applet_instances_with_id;
 	guint            next_uid;
 };
 
@@ -90,6 +91,11 @@ mate_panel_applet_factory_finalize (GObject *object)
 		factory->applets = NULL;
 	}
 
+	if (factory->n_applet_instances_with_id) {
+		g_hash_table_unref (factory->n_applet_instances_with_id);
+		factory->n_applet_instances_with_id = NULL;
+	}
+
 	if (factory->closure) {
 		g_closure_unref (factory->closure);
 		factory->closure = NULL;
@@ -102,6 +108,7 @@ static void
 mate_panel_applet_factory_init (MatePanelAppletFactory *factory)
 {
 	factory->applets = g_hash_table_new (NULL, NULL);
+	factory->n_applet_instances_with_id = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 	factory->next_uid = 1;
 }
 
@@ -122,6 +129,10 @@ mate_panel_applet_factory_applet_removed (MatePanelAppletFactory *factory,
 	uid = GPOINTER_TO_UINT (g_object_get_data (applet, "uid"));
 
 	g_hash_table_remove (factory->applets, GUINT_TO_POINTER (uid));
+	g_hash_table_insert (factory->n_applet_instances_with_id,
+			     g_strdup (mate_panel_applet_get_applet_id (MATE_PANEL_APPLET (applet))),
+			     g_hash_table_lookup (factory->n_applet_instances_with_id,
+										   mate_panel_applet_get_applet_id (MATE_PANEL_APPLET (applet))) - 1);
 
 	factory->n_applets--;
 	if (factory->n_applets == 0)
@@ -234,6 +245,9 @@ mate_panel_applet_factory_get_applet (MatePanelAppletFactory    *factory,
 	object_path = mate_panel_applet_get_object_path (MATE_PANEL_APPLET (applet));
 	g_hash_table_insert (factory->applets, GUINT_TO_POINTER (uid), applet);
 	g_object_set_data (applet, "uid", GUINT_TO_POINTER (uid));
+	g_hash_table_insert (factory->n_applet_instances_with_id,
+			     g_strdup (applet_id),
+			     g_hash_table_lookup (factory->n_applet_instances_with_id, applet_id) + 1);
 
 	return_value = g_variant_new ("(obuu)",
 	                              object_path,
@@ -358,4 +372,17 @@ mate_panel_applet_factory_get_applet_widget (const gchar *id,
 		return NULL;
 
 	return GTK_WIDGET (object);
+}
+
+guint32
+mate_panel_factory_get_number_of_instances (MatePanelApplet *applet) {
+	guint32 n_instances = 0;
+
+	GList* factories_as_list = g_hash_table_get_values(factories);
+	for(; factories_as_list; factories_as_list = g_list_next(factories_as_list)) {
+		MatePanelAppletFactory* factory = (MatePanelAppletFactory*) factories_as_list->data;
+		n_instances += GPOINTER_TO_UINT (g_hash_table_lookup (factory->n_applet_instances_with_id, mate_panel_applet_get_applet_id (applet)));
+	}
+
+	return n_instances;
 }

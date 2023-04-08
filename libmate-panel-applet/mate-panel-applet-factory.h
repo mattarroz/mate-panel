@@ -46,6 +46,8 @@ MatePanelAppletFactory *mate_panel_applet_factory_new              (const gchar 
 gboolean            mate_panel_applet_factory_register_service (MatePanelAppletFactory *factory);
 GtkWidget          *mate_panel_applet_factory_get_applet_widget (const gchar        *id,
                                                             guint               uid);
+guint32
+mate_panel_factory_get_number_of_instances (MatePanelApplet *applet);
 #ifdef __cplusplus
 }
 #endif

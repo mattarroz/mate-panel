@@ -2453,3 +2453,8 @@ mate_panel_applet_get_applet_widget (const gchar *factory_id,
 
 	return widget;
 }
+
+char *
+mate_panel_applet_get_applet_id (MatePanelApplet *applet) {
+	return applet->priv->id;
+}
