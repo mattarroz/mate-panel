@@ -25,6 +25,7 @@
 #ifdef HAVE_WINDOW_PREVIEWS
 #include <gdk/gdkx.h>
 #endif
+#include <X11/Xlib.h>
 
 #define MATE_DESKTOP_USE_UNSTABLE_API
 #include <libmate-desktop/mate-desktop-utils.h>
@@ -80,6 +81,28 @@ typedef struct {
 	GSettings* preview_settings;
 #endif
 } TasklistData;
+
+typedef struct {
+        gint window_idx;
+        GdkModifierType modifier;
+        guint key_id;
+} AcceleratorKeyMapping;
+
+const AcceleratorKeyMapping accelerator_key_mapping[] =
+{
+	{0, Mod4Mask, XK_1 },
+	{1, Mod4Mask, XK_2 },
+	{2, Mod4Mask, XK_3 },
+	{3, Mod4Mask, XK_4 },
+	{4, Mod4Mask, XK_5 },
+	{5, Mod4Mask, XK_6 },
+	{6, Mod4Mask, XK_7 },
+	{7, Mod4Mask, XK_8 },
+	{8, Mod4Mask, XK_9 },
+	{9, Mod4Mask, XK_0 }
+};
+
+static GHashTable *accelerator_key_to_window_index_map = NULL;
 
 static void call_system_monitor(GtkAction* action, TasklistData* tasklist);
 static void display_properties_dialog(GtkAction* action, TasklistData* tasklist);
@@ -646,6 +669,94 @@ static GdkPixbuf* icon_loader_func(const char* icon, int size, unsigned int flag
 	return retval;
 }
 
+static GdkFilterReturn 
+tasklist_hotkey_pressed(GdkXEvent* gdk_xevent, GdkEvent* event, gpointer data)
+{
+	XEvent* xevent = (XEvent*)gdk_xevent;
+
+	switch (xevent->type)
+	{
+	case KeyPress:
+		{
+			g_warning("x key: %d, x state: %d, x : %d", xevent->xkey.keycode, xevent->xkey.state, xevent->xkey.keycode | xevent->xkey.state);
+			gpointer window_idx;
+			if (g_hash_table_lookup_extended (accelerator_key_to_window_index_map, GUINT_TO_POINTER(xevent->xkey.keycode), NULL, &window_idx)) {
+				// wnck_tasklist_unminimize_task_by_id(tasklist, GPOINTER_TO_INT(window_idx));
+				g_warning("tasklist_accelerator_key_pressed: %d", GPOINTER_TO_INT(window_idx));
+			}
+		}
+		break;
+	}
+	return GDK_FILTER_CONTINUE;
+}
+
+static void
+grab_ungrab_hotkeys(gboolean grab, unsigned int startKey)
+{
+	GdkWindow* rootwin = gdk_get_default_root_window();
+	GdkDisplay* display = gdk_window_get_display(rootwin);
+	GdkScreen *scr = gdk_screen_get_default();
+    gdk_window_set_events(rootwin, GDK_KEY_PRESS_MASK);
+    gdk_window_add_filter(rootwin, tasklist_hotkey_pressed, NULL);
+
+
+	if (grab) {
+		accelerator_key_to_window_index_map = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, NULL);
+	} else {
+		g_hash_table_destroy(accelerator_key_to_window_index_map);
+		accelerator_key_to_window_index_map = NULL;
+	}
+	Display* Xdisplay =  gdk_x11_get_default_xdisplay();
+
+	for (int i = 0; i < G_N_ELEMENTS(accelerator_key_mapping); i++)
+	{
+		gint x11_key_code = XKeysymToKeycode(Xdisplay, accelerator_key_mapping[i].key_id);
+		if (x11_key_code == 0) {
+			g_warning("Failed to get key code for key %d", accelerator_key_mapping[i].key_id);
+			continue;
+		}
+
+		const int ignored_modifiers[] = {0, (int)GDK_MOD2_MASK, (int)GDK_LOCK_MASK, (int)(GDK_MOD2_MASK | GDK_LOCK_MASK)};
+		for (int j = 0; j < G_N_ELEMENTS(ignored_modifiers); j++)
+		{
+			if (grab)
+			{
+				gdk_x11_display_error_trap_push(display);
+
+				XGrabKey(
+					Xdisplay,
+					x11_key_code,
+					accelerator_key_mapping[i].modifier | ignored_modifiers[j],
+					GDK_WINDOW_XID(rootwin),
+					1,
+					GrabModeAsync,
+					GrabModeAsync);
+
+				g_hash_table_insert(accelerator_key_to_window_index_map, GUINT_TO_POINTER(x11_key_code), GINT_TO_POINTER(i));
+				int error = gdk_x11_display_error_trap_pop(display);
+				if (error)
+				{
+					g_warning("Failed to grab key %d", accelerator_key_mapping[i].key_id);
+				}
+			}
+			else
+			{
+				gdk_x11_display_error_trap_push(display);
+
+				XUngrabKey(
+					Xdisplay,
+					x11_key_code,
+					accelerator_key_mapping[i].modifier | ignored_modifiers[j],
+					GDK_WINDOW_XID(rootwin));
+
+				gdk_x11_display_error_trap_pop_ignored(display);
+			}
+		}
+		
+	}
+
+}
+
 gboolean window_list_applet_fill(MatePanelApplet* applet)
 {
 	TasklistData* tasklist;
@@ -656,14 +767,6 @@ gboolean window_list_applet_fill(MatePanelApplet* applet)
 	
 	application = g_application_new("org.wncklet.Tasklist", 0);
     
-    if (!g_application_register(application, NULL, NULL) || g_application_get_is_remote(application)) {
-        GtkDialog *dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "Tasklist is already running");
-		gtk_dialog_run(dialog);
-		gtk_widget_destroy(dialog);
-		g_object_unref(application);
-		return FALSE;
-    };
-
 	tasklist = g_new0(TasklistData, 1);
 
 	tasklist->applet = GTK_WIDGET(applet);
@@ -743,6 +846,14 @@ gboolean window_list_applet_fill(MatePanelApplet* applet)
 	gtk_action_group_set_translation_domain(action_group, GETTEXT_PACKAGE);
 	gtk_action_group_add_actions(action_group, tasklist_menu_actions, G_N_ELEMENTS(tasklist_menu_actions), tasklist);
 
+    if (!g_application_register(application, NULL, NULL) || g_application_get_is_remote(application)) {
+		// FIXME user must be able to disable this message for the next time
+        GtkDialog *dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "A tasklist applet is already running, disabling SUPER+1-9 shortcuts.");
+		gtk_dialog_run(dialog);
+		gtk_widget_destroy(dialog);
+    } else {
+		grab_ungrab_hotkeys(TRUE, 0);
+	}
 
 	/* disable the item of system monitor, if not exists.
 	 * example, mate-system-monitor, o gnome-system-monitor */
@@ -1030,6 +1141,8 @@ static void destroy_tasklist(GtkWidget* widget, TasklistData* tasklist)
 	if (tasklist->preview)
 		gtk_widget_destroy(tasklist->preview);
 #endif
+
+	grab_ungrab_hotkeys(FALSE, 0);
 
 	g_free(tasklist);
 }

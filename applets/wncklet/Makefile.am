@@ -44,7 +44,7 @@ APPLET_LOCATION   = $(libexecdir)/wnck-applet
 
 libexec_PROGRAMS = wnck-applet
 wnck_applet_SOURCES = $(WNCKLET_SOURCES)
-wnck_applet_LDADD = $(WNCKLET_LDADD)
+wnck_applet_LDADD = $(WNCKLET_LDADD)  -lX11
 wnck_applet_CFLAGS = $(AM_CFLAGS)
 endif
 
