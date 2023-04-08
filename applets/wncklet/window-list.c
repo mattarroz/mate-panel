@@ -652,6 +652,17 @@ gboolean window_list_applet_fill(MatePanelApplet* applet)
 	GtkActionGroup* action_group;
 	GtkCssProvider  *provider;
 	GdkScreen *screen;
+	GApplication *application;
+	
+	application = g_application_new("org.wncklet.Tasklist", 0);
+    
+    if (!g_application_register(application, NULL, NULL) || g_application_get_is_remote(application)) {
+        GtkDialog *dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "Tasklist is already running");
+		gtk_dialog_run(dialog);
+		gtk_widget_destroy(dialog);
+		g_object_unref(application);
+		return FALSE;
+    };
 
 	tasklist = g_new0(TasklistData, 1);
 
