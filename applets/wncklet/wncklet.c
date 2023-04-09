@@ -133,7 +133,9 @@ static gboolean wncklet_factory(MatePanelApplet* applet, const char* iid, gpoint
 	else if (!strcmp(iid, "WorkspaceSwitcherApplet") || !strcmp(iid, "PagerApplet"))
 		retval = workspace_switcher_applet_fill(applet);
 	else if (!strcmp(iid, "WindowListApplet") || !strcmp(iid, "TasklistApplet"))
-		retval = window_list_applet_fill(applet);
+		retval = window_list_applet_fill(applet, FALSE);
+	else if (!strcmp(iid, "UniqueWindowListApplet"))
+		retval = window_list_applet_fill(applet, TRUE);
 	else if (!strcmp(iid, "ShowDesktopApplet"))
 		retval = show_desktop_applet_fill(applet);
 

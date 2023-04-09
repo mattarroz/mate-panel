@@ -15,6 +15,7 @@
 #include <string.h>
 
 #include <mate-panel-applet.h>
+#include <mate-panel-applet-factory.h>
 #include <mate-panel-applet-gsettings.h>
 
 #include <glib/gi18n.h>
@@ -51,6 +52,7 @@ typedef struct {
 	gboolean include_all_workspaces;
 	WnckTasklistGroupingType grouping;
 	gboolean move_unminimized_windows;
+	gboolean is_hotkey_receiver;
 
 	GtkOrientation orientation;
 	int size;
@@ -678,11 +680,9 @@ tasklist_hotkey_pressed(GdkXEvent* gdk_xevent, GdkEvent* event, gpointer data)
 	{
 	case KeyPress:
 		{
-			g_warning("x key: %d, x state: %d, x : %d", xevent->xkey.keycode, xevent->xkey.state, xevent->xkey.keycode | xevent->xkey.state);
 			gpointer window_idx;
 			if (g_hash_table_lookup_extended (accelerator_key_to_window_index_map, GUINT_TO_POINTER(xevent->xkey.keycode), NULL, &window_idx)) {
-				// wnck_tasklist_unminimize_task_by_id(tasklist, GPOINTER_TO_INT(window_idx));
-				g_warning("tasklist_accelerator_key_pressed: %d", GPOINTER_TO_INT(window_idx));
+				wnck_tasklist_unminimize_task_by_id(WNCK_TASKLIST(data), GPOINTER_TO_INT(window_idx));
 			}
 		}
 		break;
@@ -691,14 +691,12 @@ tasklist_hotkey_pressed(GdkXEvent* gdk_xevent, GdkEvent* event, gpointer data)
 }
 
 static void
-grab_ungrab_hotkeys(gboolean grab, unsigned int startKey)
+grab_ungrab_hotkeys(gboolean grab, unsigned int startKey, WnckTasklist *tasklist)
 {
 	GdkWindow* rootwin = gdk_get_default_root_window();
 	GdkDisplay* display = gdk_window_get_display(rootwin);
-	GdkScreen *scr = gdk_screen_get_default();
     gdk_window_set_events(rootwin, GDK_KEY_PRESS_MASK);
-    gdk_window_add_filter(rootwin, tasklist_hotkey_pressed, NULL);
-
+    gdk_window_add_filter(rootwin, tasklist_hotkey_pressed, tasklist);
 
 	if (grab) {
 		accelerator_key_to_window_index_map = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, NULL);
@@ -757,18 +755,21 @@ grab_ungrab_hotkeys(gboolean grab, unsigned int startKey)
 
 }
 
-gboolean window_list_applet_fill(MatePanelApplet* applet)
+gboolean window_list_applet_fill(MatePanelApplet* applet, gboolean unique)
 {
 	TasklistData* tasklist;
 	GtkActionGroup* action_group;
 	GtkCssProvider  *provider;
 	GdkScreen *screen;
-	GApplication *application;
-	
-	application = g_application_new("org.wncklet.Tasklist", 0);
-    
-	tasklist = g_new0(TasklistData, 1);
 
+    if (unique && mate_panel_applet_factory_get_number_of_instances (applet) > 1) {
+        GtkDialog *dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "A unique tasklist applet is already running. If you want to run multiple tasklist applets, use the non-unique variant.");
+		gtk_dialog_run(dialog);
+		gtk_widget_destroy(GTK_WIDGET(dialog));
+		return FALSE;
+    }
+	tasklist = g_new0(TasklistData, 1);
+	tasklist->is_hotkey_receiver = unique;
 	tasklist->applet = GTK_WIDGET(applet);
 
 	provider = gtk_css_provider_new ();
@@ -846,13 +847,8 @@ gboolean window_list_applet_fill(MatePanelApplet* applet)
 	gtk_action_group_set_translation_domain(action_group, GETTEXT_PACKAGE);
 	gtk_action_group_add_actions(action_group, tasklist_menu_actions, G_N_ELEMENTS(tasklist_menu_actions), tasklist);
 
-    if (!g_application_register(application, NULL, NULL) || g_application_get_is_remote(application)) {
-		// FIXME user must be able to disable this message for the next time
-        GtkDialog *dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "A tasklist applet is already running, disabling SUPER+1-9 shortcuts.");
-		gtk_dialog_run(dialog);
-		gtk_widget_destroy(dialog);
-    } else {
-		grab_ungrab_hotkeys(TRUE, 0);
+	if (tasklist->is_hotkey_receiver) {
+		grab_ungrab_hotkeys(TRUE, 0, WNCK_TASKLIST(tasklist->tasklist));
 	}
 
 	/* disable the item of system monitor, if not exists.
@@ -1142,7 +1138,8 @@ static void destroy_tasklist(GtkWidget* widget, TasklistData* tasklist)
 		gtk_widget_destroy(tasklist->preview);
 #endif
 
-	grab_ungrab_hotkeys(FALSE, 0);
+	if (tasklist->is_hotkey_receiver)
+		grab_ungrab_hotkeys(FALSE, 0, WNCK_TASKLIST(tasklist->tasklist));
 
 	g_free(tasklist);
 }

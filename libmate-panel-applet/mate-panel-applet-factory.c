@@ -375,7 +375,7 @@ mate_panel_applet_factory_get_applet_widget (const gchar *id,
 }
 
 guint32
-mate_panel_factory_get_number_of_instances (MatePanelApplet *applet) {
+mate_panel_applet_factory_get_number_of_instances (MatePanelApplet *applet) {
 	guint32 n_instances = 0;
 
 	GList* factories_as_list = g_hash_table_get_values(factories);

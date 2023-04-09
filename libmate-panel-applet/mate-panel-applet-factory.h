@@ -47,7 +47,7 @@ gboolean            mate_panel_applet_factory_register_service (MatePanelAppletF
 GtkWidget          *mate_panel_applet_factory_get_applet_widget (const gchar        *id,
                                                             guint               uid);
 guint32
-mate_panel_factory_get_number_of_instances (MatePanelApplet *applet);
+mate_panel_applet_factory_get_number_of_instances (MatePanelApplet *applet);
 #ifdef __cplusplus
 }
 #endif

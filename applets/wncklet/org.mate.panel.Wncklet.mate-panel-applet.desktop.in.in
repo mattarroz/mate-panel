@@ -44,6 +44,19 @@ X-MATE-Bugzilla-Component=window list
 X-MATE-Bugzilla-Version=@VERSION@
 X-MATE-Bugzilla-OtherBinaries=wnck-applet
 
+[UniqueWindowListApplet]
+Name=Unique Window List
+Description=Switch between open windows using buttons (unique instance that receives keyboard shortcuts)
+# Translators: Do NOT translate or transliterate this text (this is an icon file name)!
+Icon=mate-panel-window-list
+MateComponentId=OAFIID:MATE_TasklistApplet;OAFIID:MATE_WindowListApplet;
+Platforms=X11;
+X-MATE-Bugzilla-Bugzilla=MATE
+X-MATE-Bugzilla-Product=mate-panel
+X-MATE-Bugzilla-Component=window list
+X-MATE-Bugzilla-Version=@VERSION@
+X-MATE-Bugzilla-OtherBinaries=wnck-applet
+
 [ShowDesktopApplet]
 Name=Show Desktop
 Description=Hide application windows and show the desktop
